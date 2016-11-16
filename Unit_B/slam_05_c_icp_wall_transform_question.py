@@ -32,8 +32,37 @@ def estimate_transform(left_list, right_list, fix_scale = False):
     # Compute left and right center.
     lc = compute_center(left_list)
     rc = compute_center(right_list)
+    cs = 0.0
+    ss = 0.0
+    rr = 0.0
+    ll = 0.0
+    l_strich = []
+    r_strich = []
 
-    # --->>> Insert your previous solution here.
+    for i in range(len(left_list)):
+
+        l_strich.append((left_list[i][0] - lc[0], left_list[i][1] - lc[1]))
+        r_strich.append((right_list[i][0] - rc[0], right_list[i][1] - rc[1]))
+        cs += r_strich[i][0] * l_strich[i][0] + r_strich[i][1] * l_strich[i][1]
+        ss += -r_strich[i][0] * l_strich[i][1] + r_strich[i][1] * l_strich[i][0]
+        rr += r_strich[i][0]**2 + r_strich[i][1]**2
+        ll += l_strich[i][0]**2 + l_strich[i][1]**2
+
+    if ll==0 or rr ==0:
+        return None
+    else:
+        if fix_scale:
+            la = 1.0
+        else:
+            la = sqrt(rr / ll)
+
+    c = cs / (sqrt(cs**2 + ss**2))
+    s = ss / (sqrt(cs**2 + ss**2))
+
+    tx = rc[0] - la * (c * lc[0] - s * lc[1])
+    ty = rc[1] - la * (s * lc[0] + c * lc[1])
+
+    # --->>> Insert here your code to compute lambda, c, s and tx, ty.
 
     return la, c, s, tx, ty
 
@@ -54,8 +83,15 @@ def apply_transform(trafo, p):
 # similarity transform. Note this changes the position as well as
 # the heading.
 def correct_pose(pose, trafo):
-    
-    # --->>> Insert your previous solution here.
+
+    temp = apply_transform(trafo, (pose[0], pose[1]))
+    #pose[0] = temp[0]
+    #pose[1] = temp[1]
+    #pose[2] = atan2(trafo[2]/trafo[1])
+
+
+    pose = (temp[0], temp[1], pose[2] + atan2(trafo[2],trafo[1]))
+    # --->>> This is what you'll have to implement.
 
     return (pose[0], pose[1], pose[2])  # Replace this by the corrected pose.
 
@@ -82,7 +118,21 @@ def get_corresponding_points_on_wall(points,
     left_list = []
     right_list = []
 
-    # ---> Insert your previous solution here.
+    for p in points:
+        x,y = p
+        if x < (arena_left+eps) and x > (arena_left - eps):
+            left_list.append(p)
+            right_list.append( (arena_left,y) )
+        elif x < (arena_right + eps) and x > (arena_right -eps):
+            left_list.append(p)
+            right_list.append( (arena_right,y) )
+        elif y < arena_bottom + eps and y > arena_bottom - eps:
+            left_list.append(p)
+            right_list.append( (x,arena_bottom) )
+        elif y < arena_top + eps and y > arena_top - eps:
+            left_list.append(p)
+            right_list.append( (x,arena_top) )
+    # ---> Implement your code here.
 
     return left_list, right_list
 
@@ -94,7 +144,14 @@ def get_icp_transform(world_points, iterations):
     # Iterate assignment and estimation of trafo a few times.
 
     # --->>> Implement your code here.
-    
+    overall_trafo = (1.0, 1.0, 0.0, 0.0, 0.0)
+
+    for j in range(iterations):
+        trafo_pts = [apply_transform(overall_trafo, p) for p in world_points]
+        left, right = get_corresponding_points_on_wall(trafo_pts)
+        trafo = estimate_transform(left, right, fix_scale=True)
+        if trafo:
+            overall_trafo = concatenate_transform(trafo, overall_trafo)
     # You may use the following strategy:
     # Start with the identity transform:
     #   overall_trafo = (1.0, 1.0, 0.0, 0.0, 0.0)

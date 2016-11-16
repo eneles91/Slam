@@ -10,3 +10,9 @@ for a in range(len(c)):
     print((t))
     t += 1
 
+p = (2,5)
+x,y = p
+print(x)
+print(abs(-1))
+
+
