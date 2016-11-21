@@ -10,15 +10,26 @@ def move(distribution, delta):
 
     # --->>> Copy your previous code here.
 
-    return distribution  # Replace this by your own result.
+    return Distribution(distribution.offset + delta, distribution.values)
 
 
 def convolve(a, b):
     """Convolve distribution a and b and return the resulting new distribution."""
+    a = move(a, b.offset)
+    dist_list = []
+
+    for i in range(len(a.values)):
+        new_values = []
+
+        for j in range(len(b.values)):
+            new_values.append((a.values[i])*(b.values[j]))
+        print(a.offset + i)
+        d = Distribution(a.offset + i, new_values)
+        dist_list.append(d)
 
     # --->>> Put your code here.
-    
-    return a  # Replace this by your own result.
+
+    return Distribution.sum(dist_list)
 
 
 if __name__ == '__main__':

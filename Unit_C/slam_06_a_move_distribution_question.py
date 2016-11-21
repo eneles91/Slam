@@ -10,7 +10,7 @@ def move(distribution, delta):
 
     # --->>> Insert your code here.
     
-    return distribution  # Replace this by your own result.
+    return Distribution(distribution.offset + delta ,distribution.values)
 
 if __name__ == '__main__':
     # List of movements: move 3 times by 20.
