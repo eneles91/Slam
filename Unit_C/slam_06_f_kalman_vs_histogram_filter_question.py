@@ -12,22 +12,41 @@ def move(distribution, delta):
 
     # --->>> Copy your previous code here.
 
-    return distribution  # Replace this by your own result.
+    return Distribution(distribution.offset + delta, distribution.values)
 
 
 def convolve(a, b):
     """Convolve distribution a and b and return the resulting new distribution."""
+    a = move(a, b.offset)
 
-    # --->>> Copy your previous code here.
-    
-    return a  # Replace this by your own result.
+    dist_list = []
+
+    for i in range(len(a.values)):
+        new_values = []
+
+        for j in range(len(b.values)):
+            new_values.append((a.values[i])*(b.values[j]))
+
+        d = Distribution(a.offset + i, new_values)
+        dist_list.append(d)
+
+    # --->>> Put your code here.
+
+    return Distribution.sum(dist_list)
 
 
 def multiply(a, b):
     """Multiply two distributions and return the resulting distribution."""
 
-    # --->>> Copy your previous code here.
-    
+    new_values = []
+
+    for i in range(len(b.values)):
+        new_values.append(a.value(b.offset + i) * b.values[i])
+
+    d = Distribution(b.offset, new_values)
+    d.normalize()
+    return d
+
     return a  # Modify this to return your result.
 
 #
@@ -74,14 +93,17 @@ def kalman_filter_step(belief, control, measurement):
     """Bayes filter step implementation: Kalman filter."""
 
     # --->>> Put your code here.
-    
+
     # Prediction.
-    prediction = Density(belief.mu + 10.0, belief.sigma2 + 100.0)  # Replace
+    prediction = Density(belief.mu + control.mu, belief.sigma2 + control.sigma2)
 
     # Correction.
-    correction = prediction  # Replace
+    K = prediction.sigma2/(prediction.sigma2 + measurement.sigma2)
+    correction = Density(prediction.mu + K*(measurement.mu - prediction.mu),
+                         (1 - K)*prediction.sigma2)
 
     return (prediction, correction)
+
 
 #
 # Main
